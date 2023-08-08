@@ -9,11 +9,11 @@ import { NotesRouter } from './presentation/routes/notes-router'
 dotenv.config()
 
 const app = express()
-const port = process.env.PORT || 3000
-
-app.use(express.json())
+const port = process.env.PORT || 5000
 
 const notesRouter = NotesRouter(container.resolve(NotesController))
+
+app.use(express.json())
 
 app.use('/notes', notesRouter)
 

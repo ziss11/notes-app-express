@@ -4,10 +4,10 @@ import { NoteBody } from "../../entities/NoteBody";
 import { NoteRepository } from "../../repositories/NoteRepository";
 
 @injectable()
-export class AddNote {
+export class EditNoteById {
     constructor(@inject(NoteRepositoryImpl) private noteRepository: NoteRepository) { }
 
-    async execute({ title, body, tags }: NoteBody): Promise<number> {
-        return await this.noteRepository.addNote({ title, body, tags })
+    async execute(id: string, { title, body, tags }: NoteBody) {
+        await this.noteRepository.editNoteById(id, { title, body, tags })
     }
 }

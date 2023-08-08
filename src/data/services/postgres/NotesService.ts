@@ -1,6 +1,7 @@
 import { Pool } from 'pg'
 import shortid from 'shortid'
 import { injectable } from 'tsyringe'
+import { NoteBody } from '../../../domain/entities/NoteBody'
 import { User } from '../../../domain/entities/User'
 import { InvariantError } from '../../../utils/exceptions/InvariantError'
 import { NotFoundError } from '../../../utils/exceptions/NotFoundError'
@@ -13,7 +14,7 @@ export class NotesService {
         this.pool = new Pool()
     }
 
-    async addNote(title: string, body: string, tags: string[]): Promise<number> {
+    async addNote({ title, body, tags }: NoteBody): Promise<number> {
         const id = `note-${shortid.generate()}`
         const createdAt = new Date().toISOString()
         const updatedAt = createdAt
@@ -33,12 +34,12 @@ export class NotesService {
         return noteId
     }
 
-    async getNotes() {
+    async getNotes(): Promise<User[]> {
         const result = await this.pool.query('SELECT * FROM notes')
         return result.rows.map(User.fromDB)
     }
 
-    async getNoteById(id: string) {
+    async getNoteById(id: string): Promise<User> {
         const query = {
             text: `SELECT * FROM notes WHERE notes.id = $1`,
             values: [id]
@@ -50,5 +51,31 @@ export class NotesService {
         }
 
         return result.rows.map(User.fromDB)[0]
+    }
+
+    async editNoteById(id: string, { title, body, tags }: NoteBody) {
+        const updatedAt = new Date().toISOString()
+        const query = {
+            text: 'UPDATE notes SET title=$1, body=$2, tags=$3, updated_at=$4 WHERE id = $5 RETURNING id',
+            values: [title, body, tags, updatedAt, id]
+        }
+        const result = await this.pool.query(query)
+
+        if (!result.rows.length) {
+            throw new NotFoundError('Gagal memperbarui catatan. Id tidak ditemukan')
+        }
+    }
+
+    async deleteNoteById(id: string) {
+        const query = {
+            text: 'DELETE FROM notes WHERE id = $1 RETURNING id',
+            values: [id]
+        }
+
+        const result = await this.pool.query(query)
+
+        if (!result.rows.length) {
+            throw new NotFoundError('Catatan gagal dihapus. Id tidak ditemukan')
+        }
     }
 }

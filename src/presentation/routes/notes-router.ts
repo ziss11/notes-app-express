@@ -1,4 +1,5 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
+import { asyncHandler } from '../../utils';
 import { notePayloadValidator } from '../../utils/validators/notes-validator';
 import { NotesController } from "../controllers/NotesController";
 import { validationHandler } from '../middlewares/validation-handler';
@@ -6,18 +7,14 @@ import { validationHandler } from '../middlewares/validation-handler';
 export const NotesRouter = (notesController: NotesController): express.Router => {
     const router = express.Router()
 
-    router.post('/', notePayloadValidator, validationHandler, async (req: Request, res: Response) => {
-        await notesController.postNote(req, res)
-    })
+    router.route('/')
+        .post(notePayloadValidator, validationHandler, asyncHandler(notesController.postNote))
+        .get(asyncHandler(notesController.getNotes))
 
-    router.get('/', async (req: Request, res: Response) => {
-        await notesController.getNotes(req, res)
-    })
-
-    router.get('/:id', async (req: Request, res: Response) => {
-        await notesController.getNoteById(req, res)
-    })
-
+    router.route('/:id')
+        .get(asyncHandler(notesController.getNoteById))
+        .put(notePayloadValidator, validationHandler, asyncHandler(notesController.putNoteById))
+        .delete(asyncHandler(notesController.deleteNoteById))
 
     return router
 }
