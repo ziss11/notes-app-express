@@ -1,10 +1,11 @@
-import { autoInjectable } from "tsyringe";
-import { NoteRepositoryImpl } from "../../../data/repositories/NotesRepositoryImpl";
+import { inject, injectable } from "tsyringe";
+import { NoteRepositoryImpl } from "../../../data/repositories/NoteRepositoryImpl";
 import { NoteBody } from "../../entities/NoteBody";
+import { NoteRepository } from "../../repositories/NoteRepository";
 
-@autoInjectable()
+@injectable()
 export class AddNote {
-    constructor(private noteRepository: NoteRepositoryImpl) {
+    constructor(@inject(NoteRepositoryImpl) private noteRepository: NoteRepository) {
         this.noteRepository = noteRepository
     }
 

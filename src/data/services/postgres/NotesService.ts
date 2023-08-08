@@ -1,9 +1,9 @@
 import { Pool } from 'pg'
-import { autoInjectable } from 'tsyringe'
-import { v4 as uuid } from 'uuid'
+import shortid from 'shortid'
+import { injectable } from 'tsyringe'
 import { InvariantError } from '../../../utils/exceptions/InvariantError'
 
-@autoInjectable()
+@injectable()
 export class NotesService {
     private pool: Pool
 
@@ -12,7 +12,7 @@ export class NotesService {
     }
 
     async addNote(title: string, body: string, tags: string[], owner: string): Promise<number> {
-        const id = `note-${uuid()}`
+        const id = `note-${shortid.generate()}`
         const createdAt = new Date().toISOString()
         const updatedAt = createdAt
 

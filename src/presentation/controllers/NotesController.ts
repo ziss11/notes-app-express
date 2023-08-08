@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
-import { autoInjectable } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import { AddNote } from "../../domain/usecases/notes/AddNote";
 
-@autoInjectable()
+@injectable()
 export class NotesController {
-    constructor(private addNote: AddNote) {
+    constructor(@inject(AddNote) private addNote: AddNote) {
         this.addNote = addNote
     }
 
