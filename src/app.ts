@@ -3,8 +3,8 @@ import express from 'express'
 import 'reflect-metadata'
 import { container } from 'tsyringe'
 import { NotesController } from './presentation/controllers/NotesController'
+import { errorHandler } from './presentation/middlewares/error-handler'
 import { NotesRouter } from './presentation/routes/notes-router'
-import { errorHandler } from './utils/error-handler'
 
 dotenv.config()
 
@@ -18,7 +18,4 @@ const notesRouter = NotesRouter(container.resolve(NotesController))
 app.use('/notes', notesRouter)
 
 app.use(errorHandler)
-
-app.listen(port, () => {
-  console.log(`Server berjalan pada ${port}`)
-})
+app.listen(port, () => console.log(`Server berjalan pada http://localhost:${port}`))

@@ -1,10 +1,12 @@
 import express, { Request, Response } from 'express';
+import { notePayloadValidator } from '../../utils/validators/notes-validator';
 import { NotesController } from "../controllers/NotesController";
+import { validationHandler } from '../middlewares/validation-handler';
 
 export const NotesRouter = (notesController: NotesController): express.Router => {
     const router = express.Router()
 
-    router.post('/', async (req: Request, res: Response) => {
+    router.post('/', notePayloadValidator, validationHandler, async (req: Request, res: Response) => {
         await notesController.postNote(req, res)
     })
 
@@ -15,6 +17,7 @@ export const NotesRouter = (notesController: NotesController): express.Router =>
     router.get('/:id', async (req: Request, res: Response) => {
         await notesController.getNoteById(req, res)
     })
+
 
     return router
 }
