@@ -8,6 +8,7 @@ export const errorHandler = (
     next: NextFunction
 ) => {
     console.log(err.message)
+
     if (err instanceof ClientError) {
         return res.status(err.statusCode).json({
             status: 'fail',

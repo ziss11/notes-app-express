@@ -1,8 +1,8 @@
 import { Pool } from 'pg'
 import shortid from 'shortid'
 import { injectable } from 'tsyringe'
+import { Note } from '../../../domain/entities/Note'
 import { NoteBody } from '../../../domain/entities/NoteBody'
-import { User } from '../../../domain/entities/User'
 import { InvariantError } from '../../../utils/exceptions/InvariantError'
 import { NotFoundError } from '../../../utils/exceptions/NotFoundError'
 
@@ -34,12 +34,12 @@ export class NotesService {
         return noteId
     }
 
-    async getNotes(): Promise<User[]> {
+    async getNotes(): Promise<Note[]> {
         const result = await this.pool.query('SELECT * FROM notes')
-        return result.rows.map(User.fromDB)
+        return result.rows.map(Note.fromDB)
     }
 
-    async getNoteById(id: string): Promise<User> {
+    async getNoteById(id: string): Promise<Note> {
         const query = {
             text: `SELECT * FROM notes WHERE notes.id = $1`,
             values: [id]
@@ -50,7 +50,7 @@ export class NotesService {
             throw new NotFoundError('Catatan tidak ditemukan')
         }
 
-        return result.rows.map(User.fromDB)[0]
+        return result.rows.map(Note.fromDB)[0]
     }
 
     async editNoteById(id: string, { title, body, tags }: NoteBody) {
@@ -61,7 +61,7 @@ export class NotesService {
         }
         const result = await this.pool.query(query)
 
-        if (!result.rows.length) {
+        if (!result.rowCount) {
             throw new NotFoundError('Gagal memperbarui catatan. Id tidak ditemukan')
         }
     }
@@ -74,7 +74,7 @@ export class NotesService {
 
         const result = await this.pool.query(query)
 
-        if (!result.rows.length) {
+        if (!result.rowCount) {
             throw new NotFoundError('Catatan gagal dihapus. Id tidak ditemukan')
         }
     }

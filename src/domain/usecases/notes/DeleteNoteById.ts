@@ -1,6 +1,6 @@
 import { inject, injectable } from "tsyringe";
 import { NoteRepositoryImpl } from "../../../data/repositories/NoteRepositoryImpl";
-import { NoteRepository } from "../../repositories/NoteRepository";
+import { NoteRepository } from "../../repositories/NotesRepository";
 
 @injectable()
 export class DeleteNoteById {

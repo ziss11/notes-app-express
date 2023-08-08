@@ -1,7 +1,7 @@
 import { inject, injectable } from 'tsyringe';
+import { Note } from '../../domain/entities/Note';
 import { NoteBody } from '../../domain/entities/NoteBody';
-import { User } from '../../domain/entities/User';
-import { NoteRepository } from '../../domain/repositories/NoteRepository';
+import { NoteRepository } from '../../domain/repositories/NotesRepository';
 import { NotesService } from '../services/postgres/NotesService';
 
 @injectable()
@@ -13,12 +13,12 @@ export class NoteRepositoryImpl implements NoteRepository {
         return noteId
     }
 
-    async getNotes(): Promise<User[]> {
+    async getNotes(): Promise<Note[]> {
         const notes = await this.notesService.getNotes()
         return notes
     }
 
-    async getNoteById(id: string): Promise<User> {
+    async getNoteById(id: string): Promise<Note> {
         const note = await this.notesService.getNoteById(id)
         return note
     }

@@ -48,16 +48,12 @@ export class NotesController {
 
     @autobind
     async putNoteById(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { id } = req.params
-            await this.editNoteByIdCase.execute(id, req.body)
-            res.json({
-                status: 'success',
-                message: 'Catatan berhasil diperbarui'
-            })
-        } catch (error) {
-            next(error)
-        }
+        const { id } = req.params
+        await this.editNoteByIdCase.execute(id, req.body)
+        res.json({
+            status: 'success',
+            message: 'Catatan berhasil diperbarui'
+        })
     }
 
     @autobind

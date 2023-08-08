@@ -1,11 +1,11 @@
-import express from 'express';
+import { Router } from 'express';
 import { asyncHandler } from '../../utils';
 import { notePayloadValidator } from '../../utils/validators/notes-validator';
 import { NotesController } from "../controllers/NotesController";
 import { validationHandler } from '../middlewares/validation-handler';
 
-export const NotesRouter = (notesController: NotesController): express.Router => {
-    const router = express.Router()
+export const NotesRouter = (notesController: NotesController): Router => {
+    const router = Router()
 
     router.route('/')
         .post(notePayloadValidator, validationHandler, asyncHandler(notesController.postNote))
