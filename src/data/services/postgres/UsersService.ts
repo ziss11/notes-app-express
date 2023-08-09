@@ -4,6 +4,7 @@ import shortid from "shortid"
 import { injectable } from "tsyringe"
 import { User } from "../../../domain/entities/User"
 import { UserBody } from "../../../domain/entities/UserBody"
+import { AuthenticationError } from "../../../utils/exceptions/AuthenticationError"
 import { InvariantError } from "../../../utils/exceptions/InvariantError"
 import { NotFoundError } from "../../../utils/exceptions/NotFoundError"
 
@@ -26,6 +27,28 @@ export class UsersService {
         if (result.rowCount > 0) {
             throw new InvariantError('Gagal menambahkan user. Username sudah digunakan.')
         }
+    }
+
+    async verifyUserCredential(username: string, password: string) {
+        const query = {
+            text: 'SELECT id, password FROM users WHERE username = $1',
+            values: [username]
+        }
+
+        const result = await this.pool.query(query)
+
+        if (!result.rows.length) {
+            throw new AuthenticationError('Kredensial yang anda berikan salah')
+        }
+
+        const { id, password: hashedPassword } = result.rows[0]
+        const match = await bcrypt.compare(password, hashedPassword)
+
+        if (!match) {
+            throw new AuthenticationError('Kredensial yang anda berikan salah')
+        }
+
+        return id
     }
 
     async addUser({ username, password, fullname }: UserBody): Promise<number> {

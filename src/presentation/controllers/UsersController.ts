@@ -1,5 +1,5 @@
 import autobind from "autobind-decorator";
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 import { inject, injectable } from "tsyringe";
 import { AddUser } from "../../domain/usecases/users/AddUser";
 import { GetUserById } from "../../domain/usecases/users/GetUserById";
@@ -14,7 +14,7 @@ export class UsersController {
     ) { }
 
     @autobind
-    async postUser(req: Request, res: Response, next: NextFunction) {
+    async postUser(req: Request, res: Response) {
         const userId = await this.addUserCase.execute(req.body)
         res.status(201).json({
             status: 'success',
@@ -24,7 +24,7 @@ export class UsersController {
     }
 
     @autobind
-    async getUserById(req: Request, res: Response, next: NextFunction) {
+    async getUserById(req: Request, res: Response) {
         const { id } = req.params
         const user = await this.getUserByIdCase.execute(id)
         res.json({
@@ -34,7 +34,7 @@ export class UsersController {
     }
 
     @autobind
-    async getUserByUsername(req: Request, res: Response, next: NextFunction) {
+    async getUserByUsername(req: Request, res: Response) {
         const username: string = req.query.username as string
         const users = await this.getUserByUsernameCase.execute(username)
         res.json({

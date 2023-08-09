@@ -1,5 +1,5 @@
 import autobind from "autobind-decorator";
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 import { inject, injectable } from "tsyringe";
 import { AddNote } from "../../domain/usecases/notes/AddNote";
 import { DeleteNoteById } from "../../domain/usecases/notes/DeleteNoteById";
@@ -18,7 +18,7 @@ export class NotesController {
     ) { }
 
     @autobind
-    async postNote(req: Request, res: Response, next: NextFunction) {
+    async postNote(req: Request, res: Response) {
         const noteId = await this.addNoteCase.execute(req.body)
         res.status(201).json({
             status: 'success',
@@ -28,7 +28,7 @@ export class NotesController {
     }
 
     @autobind
-    async getNotes(req: Request, res: Response, next: NextFunction) {
+    async getNotes(req: Request, res: Response) {
         const notes = await this.getNotesCase.execute()
         res.json({
             status: 'success',
@@ -37,7 +37,7 @@ export class NotesController {
     }
 
     @autobind
-    async getNoteById(req: Request, res: Response, next: NextFunction) {
+    async getNoteById(req: Request, res: Response) {
         const { id } = req.params
         const note = await this.getNoteByIdCase.execute(id)
         res.json({
@@ -47,7 +47,7 @@ export class NotesController {
     }
 
     @autobind
-    async putNoteById(req: Request, res: Response, next: NextFunction) {
+    async putNoteById(req: Request, res: Response) {
         const { id } = req.params
         await this.editNoteByIdCase.execute(id, req.body)
         res.json({
@@ -57,7 +57,7 @@ export class NotesController {
     }
 
     @autobind
-    async deleteNoteById(req: Request, res: Response, next: NextFunction) {
+    async deleteNoteById(req: Request, res: Response) {
         const { id } = req.params
         await this.deleteNoteByIdCase.execute(id)
         res.json({

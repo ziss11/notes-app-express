@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { asyncHandler } from '../../utils';
-import { notePayloadValidator } from '../../utils/validators/notes-validator';
+import { notePayloadValidator } from '../../utils/validators/notesValidator';
 import { NotesController } from "../controllers/NotesController";
 import { validationHandler } from '../middlewares/validation-handler';
 
