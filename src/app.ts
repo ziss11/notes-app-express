@@ -5,7 +5,8 @@ import { container } from 'tsyringe'
 import { AuthenticationsController } from './presentation/controllers/AuthenticationsController'
 import { NotesController } from './presentation/controllers/NotesController'
 import { UsersController } from './presentation/controllers/UsersController'
-import { errorHandler } from './presentation/middlewares/error-handler'
+import { authenticateJwt } from './presentation/middlewares/authenticateJwt'
+import { errorHandler } from './presentation/middlewares/errorHandler'
 import { AuthenticationsRouter } from './presentation/routes/authenticationsRouter'
 import { NotesRouter } from './presentation/routes/notesRouter'
 import { UsersRouter } from './presentation/routes/usersRouter'
@@ -21,9 +22,12 @@ const authsRouter = AuthenticationsRouter(container.resolve(AuthenticationsContr
 
 app.use(express.json())
 
-app.use('/notes', notesRouter)
+app.use('/notes', authenticateJwt, notesRouter)
 app.use('/users', usersRouter)
 app.use('/authentications', authsRouter)
 
 app.use(errorHandler)
-app.listen(port, () => console.log(`Server berjalan pada http://localhost:${port}`))
+
+app.listen(port, () => {
+    console.log(`Server berjalan pada http://localhost:${port}`)
+})

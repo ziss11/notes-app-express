@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { asyncHandler } from '../../utils';
 import { notePayloadValidator } from '../../utils/validators/notesValidator';
 import { NotesController } from "../controllers/NotesController";
-import { validationHandler } from '../middlewares/validation-handler';
+import { validationHandler } from '../middlewares/validationHandler';
 
 export const NotesRouter = (notesController: NotesController): Router => {
     const router = Router()

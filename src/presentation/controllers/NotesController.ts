@@ -19,7 +19,8 @@ export class NotesController {
 
     @autobind
     async postNote(req: Request, res: Response) {
-        const noteId = await this.addNoteCase.execute(req.body)
+        const credentialId = res.locals.userId
+        const noteId = await this.addNoteCase.execute({ ...req.body, userId: credentialId })
         res.status(201).json({
             status: 'success',
             message: 'Catatan berhasil ditambahkan',
@@ -29,7 +30,8 @@ export class NotesController {
 
     @autobind
     async getNotes(req: Request, res: Response) {
-        const notes = await this.getNotesCase.execute()
+        const userId = res.locals.userId
+        const notes = await this.getNotesCase.execute(userId)
         res.json({
             status: 'success',
             data: { notes }
@@ -39,7 +41,8 @@ export class NotesController {
     @autobind
     async getNoteById(req: Request, res: Response) {
         const { id } = req.params
-        const note = await this.getNoteByIdCase.execute(id)
+        const userId = res.locals.userId
+        const note = await this.getNoteByIdCase.execute(id, userId)
         res.json({
             status: 'success',
             data: { note }
@@ -49,7 +52,9 @@ export class NotesController {
     @autobind
     async putNoteById(req: Request, res: Response) {
         const { id } = req.params
-        await this.editNoteByIdCase.execute(id, req.body)
+        const userId = res.locals.userId
+
+        await this.editNoteByIdCase.execute(id, { ...req.body, userId })
         res.json({
             status: 'success',
             message: 'Catatan berhasil diperbarui'
@@ -59,7 +64,9 @@ export class NotesController {
     @autobind
     async deleteNoteById(req: Request, res: Response) {
         const { id } = req.params
-        await this.deleteNoteByIdCase.execute(id)
+        const userId = res.locals.userId
+
+        await this.deleteNoteByIdCase.execute(id, userId)
         res.json({
             status: 'success',
             message: 'Catatan berhasil dihapus'

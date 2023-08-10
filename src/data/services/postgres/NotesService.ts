@@ -3,6 +3,7 @@ import shortid from 'shortid'
 import { injectable } from 'tsyringe'
 import { Note } from '../../../domain/entities/Note'
 import { NoteBody } from '../../../domain/entities/NoteBody'
+import { AuthorizationError } from '../../../utils/exceptions/AuthorizationError'
 import { InvariantError } from '../../../utils/exceptions/InvariantError'
 import { NotFoundError } from '../../../utils/exceptions/NotFoundError'
 
@@ -14,14 +15,33 @@ export class NotesService {
         this.pool = new Pool()
     }
 
-    async addNote({ title, body, tags }: NoteBody): Promise<number> {
+    async verifyNoteOwner(id: string, owner: string) {
+        const query = {
+            text: 'SELECT * FROM notes WHERE id=$1',
+            values: [id]
+        }
+
+        const result = await this.pool.query(query)
+
+        if (!result.rows.length) {
+            throw new NotFoundError('Catatan tidak ditemukan')
+        }
+
+        const note = result.rows[0]
+
+        if (owner !== note.owner) {
+            throw new AuthorizationError('Anda tidak berhak mengakses resource ini')
+        }
+    }
+
+    async addNote({ title, body, tags, userId }: NoteBody): Promise<number> {
         const id = `note-${shortid.generate()}`
         const createdAt = new Date().toISOString()
         const updatedAt = createdAt
 
         const query = {
-            text: 'INSERT INTO notes VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
-            values: [id, title, body, tags, createdAt, updatedAt]
+            text: 'INSERT INTO notes VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
+            values: [id, title, body, tags, createdAt, updatedAt, userId]
         }
 
         const result = await this.pool.query(query)
@@ -34,14 +54,20 @@ export class NotesService {
         return noteId
     }
 
-    async getNotes(): Promise<Note[]> {
-        const result = await this.pool.query('SELECT * FROM notes')
+    async getNotes(owner: string): Promise<Note[]> {
+        const query = {
+            text: 'SELECT * FROM notes WHERE owner=$1',
+            values: [owner]
+        }
+        const result = await this.pool.query(query)
         return result.rows.map(Note.fromDB)
     }
 
     async getNoteById(id: string): Promise<Note> {
         const query = {
-            text: `SELECT * FROM notes WHERE notes.id = $1`,
+            text: `SELECT notes.*, users.username FROM notes 
+            LEFT JOIN users on users.id=notes.owner
+            WHERE notes.id = $1`,
             values: [id]
         }
         const result = await this.pool.query(query)

@@ -7,7 +7,7 @@ import { NoteRepository } from "../../repositories/NotesRepository";
 export class GetNotes {
     constructor(@inject(NoteRepositoryImpl) private noteRepository: NoteRepository) { }
 
-    async execute(): Promise<Note[]> {
-        return await this.noteRepository.getNotes()
+    async execute(owner: string): Promise<Note[]> {
+        return await this.noteRepository.getNotes(owner)
     }
 }

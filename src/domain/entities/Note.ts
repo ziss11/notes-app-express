@@ -6,6 +6,7 @@ export class Note {
         public tags: string[],
         public createdAt: string,
         public updatedAt: string,
+        public username?: string
     ) { }
 
     static fromDB(row: any): Note {
@@ -16,6 +17,7 @@ export class Note {
             row.tags,
             row.created_at,
             row.updated_at,
+            row.username
         )
     }
 }

@@ -6,7 +6,7 @@ import { NoteRepository } from "../../repositories/NotesRepository";
 export class DeleteNoteById {
     constructor(@inject(NoteRepositoryImpl) private noteRepository: NoteRepository) { }
 
-    async execute(id: string) {
-        await this.noteRepository.deleteNoteById(id)
+    async execute(id: string, userId: string) {
+        await this.noteRepository.deleteNoteById(id, userId)
     }
 }
