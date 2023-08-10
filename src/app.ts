@@ -22,9 +22,9 @@ const authsRouter = AuthenticationsRouter(container.resolve(AuthenticationsContr
 
 app.use(express.json())
 
-app.use('/notes', authenticateJwt, notesRouter)
 app.use('/users', usersRouter)
 app.use('/authentications', authsRouter)
+app.use('/notes', authenticateJwt, notesRouter)
 
 app.use(errorHandler)
 
