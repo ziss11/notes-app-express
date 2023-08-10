@@ -2,14 +2,12 @@ import { inject, injectable } from 'tsyringe';
 import { Note } from '../../domain/entities/Note';
 import { NoteBody } from '../../domain/entities/NoteBody';
 import { NoteRepository } from '../../domain/repositories/NotesRepository';
-import { TokenManager } from '../../utils/tokenize/TokenManager';
 import { NotesService } from '../services/postgres/NotesService';
 
 @injectable()
 export class NoteRepositoryImpl implements NoteRepository {
     constructor(
         @inject(NotesService) private notesService: NotesService,
-        @inject(TokenManager) private tokenManager: TokenManager
     ) { }
 
     async addNote({ title, body, tags, userId }: NoteBody): Promise<number> {
@@ -23,14 +21,14 @@ export class NoteRepositoryImpl implements NoteRepository {
     }
 
     async getNoteById(id: string, userId: string): Promise<Note> {
-        await this.notesService.verifyNoteOwner(id, userId)
+        await this.notesService.verifyNoteAccess(id, userId)
 
         const note = await this.notesService.getNoteById(id)
         return note
     }
 
     async editNoteById(id: string, { title, body, tags, userId }: NoteBody) {
-        await this.notesService.verifyNoteOwner(id, userId!)
+        await this.notesService.verifyNoteAccess(id, userId!)
         await this.notesService.editNoteById(id, { title, body, tags })
     }
 

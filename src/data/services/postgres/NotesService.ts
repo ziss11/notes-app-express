@@ -1,17 +1,20 @@
 import { Pool } from 'pg'
 import shortid from 'shortid'
-import { injectable } from 'tsyringe'
+import { inject, injectable } from 'tsyringe'
 import { Note } from '../../../domain/entities/Note'
 import { NoteBody } from '../../../domain/entities/NoteBody'
 import { AuthorizationError } from '../../../utils/exceptions/AuthorizationError'
 import { InvariantError } from '../../../utils/exceptions/InvariantError'
 import { NotFoundError } from '../../../utils/exceptions/NotFoundError'
+import { CollaborationsService } from './CollaborationsService'
 
 @injectable()
 export class NotesService {
     private pool: Pool
 
-    constructor() {
+    constructor(
+        @inject(CollaborationsService) private collaborationsService: CollaborationsService,
+    ) {
         this.pool = new Pool()
     }
 
@@ -31,6 +34,22 @@ export class NotesService {
 
         if (owner !== note.owner) {
             throw new AuthorizationError('Anda tidak berhak mengakses resource ini')
+        }
+    }
+
+    async verifyNoteAccess(noteId: string, userId: string) {
+        try {
+            await this.verifyNoteOwner(noteId, userId)
+        } catch (error) {
+            if (error instanceof NotFoundError) {
+                throw error
+            }
+
+            try {
+                await this.collaborationsService.verifyCollaborator(noteId, userId)
+            } catch {
+                throw error
+            }
         }
     }
 
@@ -56,7 +75,10 @@ export class NotesService {
 
     async getNotes(owner: string): Promise<Note[]> {
         const query = {
-            text: 'SELECT * FROM notes WHERE owner=$1',
+            text: `SELECT notes.* FROM notes 
+            LEFT JOIN collaborations on collaborations.note_id=notes.id
+            WHERE notes.owner=$1 OR collaborations.user_id=$1
+            GROUP BY notes.id`,
             values: [owner]
         }
         const result = await this.pool.query(query)
