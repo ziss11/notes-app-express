@@ -6,6 +6,7 @@ import { NoteBody } from '../../../domain/entities/NoteBody'
 import { AuthorizationError } from '../../../utils/exceptions/AuthorizationError'
 import { InvariantError } from '../../../utils/exceptions/InvariantError'
 import { NotFoundError } from '../../../utils/exceptions/NotFoundError'
+import { CacheService } from '../redis/CacheService'
 import { CollaborationsService } from './CollaborationsService'
 
 @injectable()
@@ -14,6 +15,7 @@ export class NotesService {
 
     constructor(
         @inject(CollaborationsService) private collaborationsService: CollaborationsService,
+        @inject(CacheService) private cacheService: CacheService,
     ) {
         this.pool = new Pool()
     }
@@ -26,7 +28,7 @@ export class NotesService {
 
         const result = await this.pool.query(query)
 
-        if (!result.rows.length) {
+        if (!result.rowCount) {
             throw new NotFoundError('Catatan tidak ditemukan')
         }
 
@@ -70,19 +72,28 @@ export class NotesService {
             throw new InvariantError('Catatan gagal ditambahkan')
         }
 
+        await this.cacheService.delete(`notes:${userId}`)
         return noteId
     }
 
     async getNotes(owner: string): Promise<Note[]> {
-        const query = {
-            text: `SELECT notes.* FROM notes 
-            LEFT JOIN collaborations on collaborations.note_id=notes.id
-            WHERE notes.owner=$1 OR collaborations.user_id=$1
-            GROUP BY notes.id`,
-            values: [owner]
+        try {
+            const result = await this.cacheService.get(`notes:${owner}`)
+            return JSON.parse(result)
+        } catch (error) {
+            const query = {
+                text: `SELECT notes.* FROM notes
+                LEFT JOIN collaborations ON collaborations.note_id = notes.id
+                WHERE notes.owner = $1 OR collaborations.user_id = $1
+                GROUP BY notes.id`,
+                values: [owner]
+            }
+            const result = await this.pool.query(query)
+            const mappedResult = result.rows.map(Note.fromDB)
+
+            await this.cacheService.set(`notes:${owner}`, JSON.stringify(mappedResult))
+            return mappedResult
         }
-        const result = await this.pool.query(query)
-        return result.rows.map(Note.fromDB)
     }
 
     async getNoteById(id: string): Promise<Note> {
@@ -94,7 +105,7 @@ export class NotesService {
         }
         const result = await this.pool.query(query)
 
-        if (!result.rows.length) {
+        if (!result.rowCount) {
             throw new NotFoundError('Catatan tidak ditemukan')
         }
 
@@ -104,7 +115,7 @@ export class NotesService {
     async editNoteById(id: string, { title, body, tags }: NoteBody) {
         const updatedAt = new Date().toISOString()
         const query = {
-            text: 'UPDATE notes SET title=$1, body=$2, tags=$3, updated_at=$4 WHERE id = $5 RETURNING id',
+            text: 'UPDATE notes SET title=$1, body=$2, tags=$3, updated_at=$4 WHERE id=$5 RETURNING id, owner',
             values: [title, body, tags, updatedAt, id]
         }
         const result = await this.pool.query(query)
@@ -112,11 +123,14 @@ export class NotesService {
         if (!result.rowCount) {
             throw new NotFoundError('Gagal memperbarui catatan. Id tidak ditemukan')
         }
+
+        const { owner } = result.rows[0]
+        await this.cacheService.delete(`notes:${owner}`)
     }
 
     async deleteNoteById(id: string) {
         const query = {
-            text: 'DELETE FROM notes WHERE id = $1 RETURNING id',
+            text: 'DELETE FROM notes WHERE id = $1 RETURNING id, owner',
             values: [id]
         }
 
@@ -125,5 +139,8 @@ export class NotesService {
         if (!result.rowCount) {
             throw new NotFoundError('Catatan gagal dihapus. Id tidak ditemukan')
         }
+
+        const { owner } = result.rows[0]
+        await this.cacheService.delete(`notes:${owner}`)
     }
 }

@@ -1,14 +1,15 @@
 import { Pool } from "pg";
 import shortid from "shortid";
-import { injectable } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import { InvariantError } from "../../../utils/exceptions/InvariantError";
+import { CacheService } from "../redis/CacheService";
 
 @injectable()
 
 export class CollaborationsService {
     private pool: Pool
 
-    constructor() {
+    constructor(@inject(CacheService) private cacheService: CacheService) {
         this.pool = new Pool()
     }
 
@@ -20,7 +21,7 @@ export class CollaborationsService {
 
         const result = await this.pool.query(query)
 
-        if (!result.rows.length) {
+        if (!result.rowCount) {
             throw new InvariantError('Kolaborasi gagal diverifikasi')
         }
     }
@@ -35,10 +36,11 @@ export class CollaborationsService {
 
         const result = await this.pool.query(query)
 
-        if (!result.rows.length) {
+        if (!result.rowCount) {
             throw new InvariantError('Kolaborasi gagal ditambahkan')
         }
 
+        await this.cacheService.delete(`notes:${userId}`)
         return result.rows[0].id
     }
 
@@ -50,8 +52,10 @@ export class CollaborationsService {
 
         const result = await this.pool.query(query)
 
-        if (!result.rows.length) {
+        if (!result.rowCount) {
             throw new InvariantError('Kolaborasi gagal dihapus')
         }
+
+        await this.cacheService.delete(`notes:${userId}`)
     }
 }
