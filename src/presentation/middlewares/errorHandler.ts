@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from "express";
+import multer from "multer";
 import { ClientError } from "../../utils/exceptions/ClientError";
 
 export const errorHandler = (
@@ -14,6 +15,13 @@ export const errorHandler = (
             status: 'fail',
             message: err.message
         })
+    } else if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({
+                status: 'fail',
+                error: 'Ukuran file melebihi batas yang diizinkan',
+            });
+        }
     } else {
         return res.status(500).json({
             status: 'error',
