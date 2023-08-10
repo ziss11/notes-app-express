@@ -1,5 +1,5 @@
 import { inject, injectable } from "tsyringe";
-import { NoteRepositoryImpl } from "../../../data/repositories/NoteRepositoryImpl";
+import NoteRepositoryImpl from "../../../data/repositories/NoteRepositoryImpl";
 import { NoteBody } from "../../entities/NoteBody";
 import { NoteRepository } from "../../repositories/NotesRepository";
 

@@ -4,6 +4,7 @@ import { inject, injectable } from "tsyringe";
 import { AddNote } from "../../domain/usecases/notes/AddNote";
 import { DeleteNoteById } from "../../domain/usecases/notes/DeleteNoteById";
 import { EditNoteById } from "../../domain/usecases/notes/EditNoteById";
+import { ExportNotes } from "../../domain/usecases/notes/ExportNotes";
 import { GetNoteById } from "../../domain/usecases/notes/GetNoteById";
 import { GetNotes } from "../../domain/usecases/notes/GetNotes";
 
@@ -14,7 +15,8 @@ export class NotesController {
         @inject(GetNotes) private getNotesCase: GetNotes,
         @inject(GetNoteById) private getNoteByIdCase: GetNoteById,
         @inject(EditNoteById) private editNoteByIdCase: EditNoteById,
-        @inject(DeleteNoteById) private deleteNoteByIdCase: DeleteNoteById
+        @inject(DeleteNoteById) private deleteNoteByIdCase: DeleteNoteById,
+        @inject(ExportNotes) private exportNotesCase: ExportNotes
     ) { }
 
     @autobind
@@ -70,6 +72,18 @@ export class NotesController {
         res.json({
             status: 'success',
             message: 'Catatan berhasil dihapus'
+        })
+    }
+
+    @autobind
+    async exportNotes(req: Request, res: Response) {
+        const userId = res.locals.userId
+        const targetEmail = req.body.targetEmail
+
+        await this.exportNotesCase.execute(userId, targetEmail)
+        res.status(201).json({
+            status: 'success',
+            message: 'Permintaan anda dalam antrean'
         })
     }
 }

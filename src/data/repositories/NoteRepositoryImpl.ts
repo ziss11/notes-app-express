@@ -3,11 +3,13 @@ import { Note } from '../../domain/entities/Note';
 import { NoteBody } from '../../domain/entities/NoteBody';
 import { NoteRepository } from '../../domain/repositories/NotesRepository';
 import { NotesService } from '../services/postgres/NotesService';
+import { ProducerService } from '../services/rabbitmq/ProducerService';
 
 @injectable()
-export class NoteRepositoryImpl implements NoteRepository {
+export default class NoteRepositoryImpl implements NoteRepository {
     constructor(
         @inject(NotesService) private notesService: NotesService,
+        @inject(ProducerService) private producerService: ProducerService,
     ) { }
 
     async addNote({ title, body, tags, userId }: NoteBody): Promise<number> {
@@ -35,5 +37,14 @@ export class NoteRepositoryImpl implements NoteRepository {
     async deleteNoteById(id: string, userId: string) {
         await this.notesService.verifyNoteOwner(id, userId)
         await this.notesService.deleteNoteById(id)
+    }
+
+    async exportNotes(userId: string, targetEmail: string): Promise<void> {
+        const message = {
+            userId,
+            targetEmail
+        }
+
+        await this.producerService.sendMessage('export:notes', JSON.stringify(message))
     }
 }

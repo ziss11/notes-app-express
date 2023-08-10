@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { asyncHandler } from '../../utils';
-import { notePayloadValidator } from '../../utils/validators/notesValidator';
+import { expotPayloadValidator, notePayloadValidator } from '../../utils/validators/notesValidator';
 import { NotesController } from "../controllers/NotesController";
 import { validationHandler } from '../middlewares/validationHandler';
 
@@ -15,6 +15,8 @@ export const NotesRouter = (notesController: NotesController): Router => {
         .get(asyncHandler(notesController.getNoteById))
         .put(notePayloadValidator, validationHandler, asyncHandler(notesController.putNoteById))
         .delete(asyncHandler(notesController.deleteNoteById))
+
+    router.post('/export', expotPayloadValidator, validationHandler, asyncHandler(notesController.exportNotes))
 
     return router
 }

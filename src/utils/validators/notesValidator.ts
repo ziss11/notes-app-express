@@ -10,3 +10,9 @@ export const notePayloadValidator = [
     body('tags').isArray({ min: 1 }).withMessage('At least one tag is required'),
     body('tags.*').isString().withMessage('Tags must be strings'),
 ]
+
+export const expotPayloadValidator = [
+    body('targetEmail')
+        .notEmpty().withMessage('Target Email is required')
+        .isString().withMessage('Target Email must be string'),
+]

@@ -7,4 +7,5 @@ export interface NoteRepository {
     getNoteById(id: string, userId: string): Promise<Note>
     editNoteById(id: string, { title, body, tags, userId }: NoteBody): Promise<void>
     deleteNoteById(id: string, userId: string): Promise<void>
+    exportNotes(userId: string, targetEmail: string): Promise<void>
 }

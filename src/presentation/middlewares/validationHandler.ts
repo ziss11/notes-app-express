@@ -8,7 +8,7 @@ export const validationHandler = (req: Request, res: Response, next: NextFunctio
     if (!errors.isEmpty()) {
         return res.status(400).json({
             status: 'fail',
-            message: errorMessages
+            message: errorMessages[0]
         });
     }
     next()
